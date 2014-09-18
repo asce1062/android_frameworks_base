@@ -319,6 +319,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private int mHideLabels;
     private boolean mCarrierAndWifiViewBlocked = false;
 
+    // statusbar carrier label
+    private ImageView mCarrierLogo;
+    private boolean mCarrierLogoEnabled = false;
+
     // Notification reminder
     private View mReminderHeader;
     private ImageView mSpacer;
@@ -582,6 +586,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_CLOCK_LOCKSCREEN), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_CARRIER_LOGO), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
         }
@@ -1104,6 +1111,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mClock = (Clock) mStatusBarView.findViewById(R.id.clock);
         mClockCenter = (ClockCenter)mStatusBarView.findViewById(R.id.center_clock);
         mNotificationIcons = (IconMerger)mStatusBarView.findViewById(R.id.notificationIcons);
+        mCarrierLogo = (ImageView) mStatusBarView.findViewById(R.id.carrierLogo);
         mMoreIcon = mStatusBarView.findViewById(R.id.moreIcon);
         mNotificationIcons.setOverflowIndicator(mMoreIcon);
         mNotificationIcons.setClockCenter(mClockCenter);
@@ -1232,7 +1240,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mBatteryView = (BatteryMeterView) mStatusBarView.findViewById(R.id.battery);
 
         mNetworkController.addSignalCluster(signalCluster);
+        mNetworkController.addCarrierCluster(signalCluster);
         signalCluster.setNetworkController(mNetworkController);
+        signalCluster.setStatusBar(this);
 
         final boolean isAPhone = mNetworkController.hasVoiceCallingFeature();
         if (isAPhone) {
@@ -4062,6 +4072,22 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
     };
 
+    private void setCarrierVisibility() {
+        if (mCarrierLogo != null) {
+            mCarrierLogo.setVisibility(mCarrierLogoEnabled ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public void setCarrierVisibility(int vis) {
+        if (mCarrierLogoEnabled) {
+            mCarrierLogo.setVisibility(vis);
+        }
+    }
+
+    public void setCarrierImageResource(int res) {
+        mCarrierLogo.setImageResource(res);
+    }
+
     // SystemUIService notifies SystemBars of configuration changes, which then calls down here
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
@@ -4153,6 +4179,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         showClockOnLockscreen = Settings.System.getIntForUser(
                 resolver, Settings.System.STATUS_BAR_CLOCK_LOCKSCREEN, 0
                 , UserHandle.USER_CURRENT) == 1;
+
+        mCarrierLogoEnabled = Settings.System.getIntForUser(
+                resolver, Settings.System.STATUS_BAR_CARRIER_LOGO, 0
+                , UserHandle.USER_CURRENT) == 1;
+        setCarrierVisibility();
 
         mFlipInterval = Settings.System.getIntForUser(mContext.getContentResolver(),
                         Settings.System.REMINDER_ALERT_INTERVAL, 1500, UserHandle.USER_CURRENT);

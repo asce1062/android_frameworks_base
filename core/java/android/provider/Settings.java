@@ -3161,6 +3161,12 @@ public final class Settings {
         */
         public static final String STATUS_BAR_CLOCK_LOCKSCREEN = "status_bar_clock_lockscreen";
 
+        /**
+        * Show the carrier logo on the status bar
+        * @hide
+        */
+        public static final String STATUS_BAR_CARRIER_LOGO = "status_bar_carrier_logo";
+
 	/** 
          * Network traffic indicator, goes from least to greatest significant bitwise
          * 0 = Display up-stream traffic if set
